@@ -1,0 +1,199 @@
+/* Shared responsive styles for data pages */
+
+/* Ensure all table data is visible */
+.data-table-wrapper {
+  overflow-x: auto;
+  overflow-y: visible !important;
+  max-height: none !important;
+  position: relative;
+  width: 100%;
+}
+
+.data-table {
+  width: 100%;
+  table-layout: auto;
+  min-width: 100%;
+}
+
+.data-page {
+  overflow: visible;
+  position: relative;
+  max-height: none;
+}
+
+.data-table tbody {
+  display: table-row-group;
+}
+
+.data-table tbody tr {
+  display: table-row;
+  visibility: visible;
+}
+
+.data-table tbody td {
+  visibility: visible;
+  display: table-cell;
+}
+
+@media (max-width: 1024px) {
+  .data-page {
+    padding: 20px;
+  }
+
+  .data-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .data-search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .data-search input {
+    min-width: 0;
+  }
+
+  .data-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .data-table-wrapper {
+    overflow-x: auto;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
+    max-height: none !important;
+    position: relative;
+  }
+
+  .data-table {
+    min-width: 500px;
+    width: 100%;
+    table-layout: auto;
+  }
+
+  .modal {
+    width: 95%;
+    max-width: 95%;
+    padding: 20px;
+  }
+
+  .modal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .data-page {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .data-toolbar {
+    gap: 12px;
+  }
+
+  .data-table {
+    font-size: 13px;
+    min-width: 500px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px 12px;
+  }
+
+  .action-btns {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .edit-btn,
+  .delete-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modal {
+    padding: 16px;
+  }
+
+  .modal h2 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .data-page {
+    padding: 12px;
+  }
+
+  .data-table {
+    font-size: 12px;
+    min-width: 400px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 8px 10px;
+  }
+
+  .data-add-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .modal {
+    padding: 12px;
+    width: 98%;
+    max-width: 98%;
+  }
+
+  .modal-row {
+    margin-bottom: 12px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-cancel,
+  .modal-submit {
+    width: 100%;
+  }
+
+  .data-toolbar-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .data-report-btn {
+    width: 100%;
+  }
+}
+
+.data-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.data-report-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.data-report-btn:hover {
+  background: #059669;
+}
