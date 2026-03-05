@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import * as authService from '../services/authService';
 
 const AuthContext = createContext(null);
@@ -7,15 +6,26 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if user is already logged in
+    // Only restore session if both token and user data exist
     const token = authService.getAuthToken();
     const savedUser = authService.getUserData();
     
     if (token && savedUser) {
-      setUser(savedUser);
+      // Validate that we have valid user data
+      if (savedUser && savedUser.user_id && savedUser.role) {
+        setUser(savedUser);
+      } else {
+        // Clear invalid data
+        authService.removeAuthToken();
+        authService.removeUserData();
+      }
+    } else {
+      // Clear any partial data
+      if (token) authService.removeAuthToken();
+      if (savedUser) authService.removeUserData();
     }
     setLoading(false);
   }, []);
@@ -48,7 +58,7 @@ export function AuthProvider({ children }) {
       authService.removeAuthToken();
       authService.removeUserData();
       setUser(null);
-      navigate('/login');
+      // Navigation will be handled by ProtectedRoute redirect
     }
   };
 

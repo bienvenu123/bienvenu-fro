@@ -114,19 +114,6 @@ function Matches() {
     return t ? t.name : `Team #${teamId}`;
   };
 
-  const getSeasonName = (seasonId) => {
-    if (!seasonId) return '—';
-    const s = seasons.find((x) => x.season_id === seasonId);
-    return s ? (s.name || `Season #${seasonId}`) : `Season #${seasonId}`;
-  };
-
-  const getRefereeName = (refereeId) => {
-    if (!refereeId) return '—';
-    const r = referees.find((x) => x.referee_id === refereeId);
-    if (!r) return `Referee #${refereeId}`;
-    const fullName = `${r.first_name || ''} ${r.last_name || ''}`.trim();
-    return fullName || `Referee #${refereeId}`;
-  };
 
   const getStatusBadgeClass = (status) => {
     switch (status) {

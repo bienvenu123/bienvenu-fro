@@ -39,14 +39,25 @@ function ReportModal({ isOpen, onClose, entityType, entityName, data, dateField 
       setEndDate(formatDate(monthEnd));
       setSelectedDate('');
     } else if (reportType === 'custom') {
-      if (!startDate || !endDate) {
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        setStartDate(formatDate(monthStart));
-        setEndDate(formatDate(monthEnd));
-      }
+      // Only set defaults if dates are empty (use functional update to avoid dependency)
+      setStartDate(prev => {
+        if (!prev) {
+          const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+          return formatDate(monthStart);
+        }
+        return prev;
+      });
+      setEndDate(prev => {
+        if (!prev) {
+          const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+          return formatDate(monthEnd);
+        }
+        return prev;
+      });
       setSelectedDate('');
     }
+    // Intentionally omit startDate/endDate to avoid resetting user-selected dates
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportType, isOpen]);
 
   const generateReport = () => {
@@ -178,13 +189,16 @@ function ReportModal({ isOpen, onClose, entityType, entityName, data, dateField 
             {reportType === 'daily' && (
               <div className="report-field">
                 <label>Select Date *</label>
-                <input
+                <div className="report-date-label">
+                  <Calendar size={16} />
+                  <input
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   className="report-input"
                   required
                 />
+                </div>
               </div>
             )}
 

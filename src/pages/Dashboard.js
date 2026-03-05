@@ -15,7 +15,7 @@ function Dashboard() {
     leagues: 0,
     players: 0,
   });
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     const loadStats = async () => {

@@ -80,6 +80,31 @@
   margin-bottom: 24px;
 }
 
+.countries-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.countries-search-input {
+  padding: 8px 12px;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  background: #1f2937;
+  color: #fff;
+  font-size: 14px;
+  min-width: 200px;
+}
+
+.countries-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.countries-search-input:focus {
+  outline: none;
+  border-color: #7c3aed;
+}
+
 .countries-add-btn {
   display: flex;
   align-items: center;

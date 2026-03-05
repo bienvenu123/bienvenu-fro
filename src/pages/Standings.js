@@ -81,15 +81,6 @@ function Standings() {
     return t ? t.name : `Team #${teamId}`;
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '—';
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-    } catch {
-      return dateString;
-    }
-  };
 
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';

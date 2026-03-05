@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Download, Calendar, FileText, TrendingUp, Users, Trophy, BarChart } from 'lucide-react';
+import { Download, Calendar, TrendingUp, Users, Trophy } from 'lucide-react';
 import { getCountries } from '../services/countryService';
 import { getTeams } from '../services/teamService';
 import { getPlayers } from '../services/playerService';
@@ -63,15 +63,25 @@ function Reports() {
       setEndDate(formatDate(monthEnd));
       setSelectedDate('');
     } else if (reportType === 'custom') {
-      // Keep existing dates or set to current month
-      if (!startDate || !endDate) {
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        setStartDate(formatDate(monthStart));
-        setEndDate(formatDate(monthEnd));
-      }
+      // Only set defaults if dates are empty (use functional update to avoid dependency)
+      setStartDate(prev => {
+        if (!prev) {
+          const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+          return formatDate(monthStart);
+        }
+        return prev;
+      });
+      setEndDate(prev => {
+        if (!prev) {
+          const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+          return formatDate(monthEnd);
+        }
+        return prev;
+      });
       setSelectedDate('');
     }
+    // Intentionally omit startDate/endDate to avoid resetting user-selected dates when reportType changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportType]);
 
   const generateReport = async () => {

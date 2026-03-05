@@ -90,7 +90,7 @@ function App() {
             />
             <Route path="reports" element={<Reports />} />
           </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

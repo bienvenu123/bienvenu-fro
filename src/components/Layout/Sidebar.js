@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Globe, Trophy, Award, Medal, Activity, Layers, Users, UserCheck, Calendar, Zap, Grid, List, User, BarChart, FileText, TrendingUp, LineChart, MapPin, CalendarCheck, Target, Flag, CalendarRange, Building2, BarChart3, Briefcase, BarChart2, ActivitySquare, ArrowRightLeft, ChevronDown, ChevronRight, FileBarChart, Shield } from 'lucide-react';
+import { Globe, Trophy, Award, Medal, Activity, Users, UserCheck, Calendar, Zap, List, User, BarChart, FileText, TrendingUp, LineChart, MapPin, CalendarCheck, Target, Flag, CalendarRange, Building2, BarChart3, Briefcase, BarChart2, ActivitySquare, ArrowRightLeft, ChevronDown, ChevronRight, FileBarChart, Layers, Shield } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import './Sidebar.css';
 
@@ -27,7 +27,7 @@ const competitionsItems = [
 const matchesItems = [
   { to: '/matches', icon: Calendar, label: 'Matches', badge: null },
   { to: '/match-events', icon: Zap, label: 'Match Events', badge: null },
-  { to: '/match-formations', icon: Grid, label: 'Match Formations', badge: null },
+  { to: '/match-formations', icon: Layers, label: 'Match Formations', badge: null },
   { to: '/match-lineups', icon: List, label: 'Match Lineups', badge: null },
   { to: '/team-match-stats', icon: BarChart2, label: 'Match Stats', badge: null },
 ];

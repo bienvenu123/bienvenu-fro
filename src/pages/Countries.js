@@ -13,8 +13,8 @@ function Countries() {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ country_id: '', name: '', code: '', flag_url: '', continent: '' });
@@ -143,10 +143,9 @@ function Countries() {
   };
 
   const filtered = countries.filter((c) => {
-    const matchesSearch = c.name?.toLowerCase().includes(search.toLowerCase()) ||
-      c.code?.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filter === 'all' || getRegionFromContinent(c.continent) === filter;
-    return matchesSearch && matchesFilter;
+    const matchesSearch = !search.trim() || c.name?.toLowerCase().includes(search.toLowerCase()) || c.code?.toLowerCase().includes(search.toLowerCase());
+    return matchesFilter && matchesSearch;
   });
 
   // Sort by teams count (descending)
@@ -157,9 +156,9 @@ function Countries() {
   });
 
   const totalCountries = countries.length;
-  const totalTeams = teams.length;
   const totalLeagues = leagues.length;
   const totalPlayers = players.length;
+  const totalTeams = teams.length;
 
   // Calculate changes based on created_at dates
   const getItemsAddedThisMonth = (items, dateField = 'created_at') => {
@@ -194,7 +193,7 @@ function Countries() {
       change: teamsAddedThisMonth > 0 
         ? `+${teamsAddedThisMonth} new this month` 
         : activeTeams > 0 
-        ? `${activeTeams} active teams` 
+        ? `${activeTeams} of ${totalTeams} teams` 
         : 'No teams yet',
       trend: teamsAddedThisMonth > 0 ? 'up' : 'up',
     },
@@ -345,10 +344,19 @@ function Countries() {
                 {totalCountries} countries - sorted by teams
               </p>
             </div>
-            <button className="countries-add-btn" onClick={openCreate}>
-              <Plus size={18} />
-              Add Country
-            </button>
+            <div className="countries-header-actions">
+              <input
+                type="text"
+                placeholder="Search countries..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="countries-search-input"
+              />
+              <button className="countries-add-btn" onClick={openCreate}>
+                <Plus size={18} />
+                Add Country
+              </button>
+            </div>
           </div>
 
           <div className="countries-filters">
