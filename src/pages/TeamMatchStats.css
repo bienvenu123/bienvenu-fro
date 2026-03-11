@@ -269,3 +269,29 @@
 .modal-submit:hover {
   background: #6d28d9;
 }
+
+.team-match-stats-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.team-stats-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 16px 0;
+}
+
+.modal-readonly {
+  display: block;
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  color: #374151;
+  font-size: 14px;
+}
+
+.modal-row-full {
+  grid-column: 1 / -1;
+}

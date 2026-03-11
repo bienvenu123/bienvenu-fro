@@ -35,6 +35,32 @@ function TeamMatchStats() {
     saves: 0,
   });
 
+  const defaultStatFields = () => ({
+    possession_percentage: '',
+    shots: 0,
+    shots_on_target: 0,
+    shots_off_target: 0,
+    blocked_shots: 0,
+    corners: 0,
+    offsides: 0,
+    fouls: 0,
+    yellow_cards: 0,
+    red_cards: 0,
+    passes: 0,
+    passes_completed: 0,
+    pass_accuracy: '',
+    tackles: 0,
+    saves: 0,
+  });
+
+  const [bothTeamsForm, setBothTeamsForm] = useState({
+    match_id: '',
+    home_stat_id: '',
+    away_stat_id: '',
+    home: defaultStatFields(),
+    away: defaultStatFields(),
+  });
+
   const loadData = async () => {
     try {
       setLoading(true);
@@ -91,9 +117,10 @@ function TeamMatchStats() {
 
   const openCreate = () => {
     setEditing(null);
+    const firstMatch = matches[0];
     setForm({
       team_match_stat_id: '',
-      match_id: matches[0]?.match_id ?? '',
+      match_id: firstMatch?.match_id ?? '',
       team_id: teams[0]?.team_id ?? '',
       possession_percentage: '',
       shots: 0,
@@ -110,6 +137,13 @@ function TeamMatchStats() {
       pass_accuracy: '',
       tackles: 0,
       saves: 0,
+    });
+    setBothTeamsForm({
+      match_id: firstMatch?.match_id ?? '',
+      home_stat_id: '',
+      away_stat_id: '',
+      home: defaultStatFields(),
+      away: defaultStatFields(),
     });
     setModalOpen(true);
   };
@@ -142,6 +176,68 @@ function TeamMatchStats() {
   const closeModal = () => {
     setModalOpen(false);
     setEditing(null);
+  };
+
+  const getSelectedMatch = () => {
+    const id = bothTeamsForm.match_id ? parseInt(bothTeamsForm.match_id, 10) : null;
+    return id ? matches.find((m) => m.match_id === id) : null;
+  };
+
+  const updateBothTeamsField = (side, field, value) => {
+    setBothTeamsForm((prev) => ({
+      ...prev,
+      [side]: { ...prev[side], [field]: value },
+    }));
+  };
+
+  const handleSubmitBothTeams = async (e) => {
+    e.preventDefault();
+    const match = getSelectedMatch();
+    if (!match) {
+      setError('Please select a match');
+      return;
+    }
+    const homeId = parseInt(bothTeamsForm.home_stat_id, 10);
+    const awayId = parseInt(bothTeamsForm.away_stat_id, 10);
+    if (!homeId || homeId < 1 || !awayId || awayId < 1) {
+      setError('Both Home and Away Team Match Stat IDs must be positive numbers');
+      return;
+    }
+    if (homeId === awayId) {
+      setError('Home and Away Stat IDs must be different');
+      return;
+    }
+    try {
+      setError(null);
+      const toPayload = (teamId, statId, stats) => ({
+        team_match_stat_id: statId,
+        match_id: match.match_id,
+        team_id: teamId,
+        possession_percentage: stats.possession_percentage ? parseFloat(stats.possession_percentage) : null,
+        shots: parseInt(stats.shots, 10) || 0,
+        shots_on_target: parseInt(stats.shots_on_target, 10) || 0,
+        shots_off_target: parseInt(stats.shots_off_target, 10) || 0,
+        blocked_shots: parseInt(stats.blocked_shots, 10) || 0,
+        corners: parseInt(stats.corners, 10) || 0,
+        offsides: parseInt(stats.offsides, 10) || 0,
+        fouls: parseInt(stats.fouls, 10) || 0,
+        yellow_cards: parseInt(stats.yellow_cards, 10) || 0,
+        red_cards: parseInt(stats.red_cards, 10) || 0,
+        passes: parseInt(stats.passes, 10) || 0,
+        passes_completed: parseInt(stats.passes_completed, 10) || 0,
+        pass_accuracy: stats.pass_accuracy ? parseFloat(stats.pass_accuracy) : null,
+        tackles: parseInt(stats.tackles, 10) || 0,
+        saves: parseInt(stats.saves, 10) || 0,
+      });
+      await Promise.all([
+        createTeamMatchStat(toPayload(match.home_team_id, homeId, bothTeamsForm.home)),
+        createTeamMatchStat(toPayload(match.away_team_id, awayId, bothTeamsForm.away)),
+      ]);
+      closeModal();
+      loadData();
+    } catch (err) {
+      setError(err.message || 'Operation failed');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -296,8 +392,10 @@ function TeamMatchStats() {
       {modalOpen && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal modal-extra-wide" onClick={(e) => e.stopPropagation()}>
-            <h2>{editing ? 'Edit Team Match Stat' : 'Add Team Match Stat'}</h2>
-            <form onSubmit={handleSubmit}>
+            {editing ? (
+              <>
+                <h2>Edit Team Match Stat</h2>
+                <form onSubmit={handleSubmit}>
               <div className="modal-grid">
                 <div className="modal-row">
                   <label>Team Match Stat ID *</label>
@@ -312,61 +410,11 @@ function TeamMatchStats() {
                 </div>
                 <div className="modal-row">
                   <label>Match *</label>
-                  {matches.length > 0 ? (
-                    <select
-                      value={form.match_id}
-                      onChange={(e) => setForm({ ...form, match_id: e.target.value })}
-                      required
-                    >
-                      <option value="">Select match</option>
-                      {matches.map((m) => {
-                        const homeTeam = teams.find((t) => t.team_id === m.home_team_id);
-                        const awayTeam = teams.find((t) => t.team_id === m.away_team_id);
-                        const homeName = homeTeam ? homeTeam.name : `Team #${m.home_team_id}`;
-                        const awayName = awayTeam ? awayTeam.name : `Team #${m.away_team_id}`;
-                        return (
-                          <option key={m.match_id} value={m.match_id}>
-                            {homeName} vs {awayName}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  ) : (
-                    <input
-                      type="number"
-                      min="1"
-                      value={form.match_id}
-                      onChange={(e) => setForm({ ...form, match_id: e.target.value })}
-                      placeholder="Match ID"
-                      required
-                    />
-                  )}
+                  <span className="modal-readonly">{getMatchName(form.match_id)}</span>
                 </div>
                 <div className="modal-row">
                   <label>Team *</label>
-                  {teams.length > 0 ? (
-                    <select
-                      value={form.team_id}
-                      onChange={(e) => setForm({ ...form, team_id: e.target.value })}
-                      required
-                    >
-                      <option value="">Select team</option>
-                      {teams.map((t) => (
-                        <option key={t.team_id} value={t.team_id}>
-                          {t.name}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type="number"
-                      min="1"
-                      value={form.team_id}
-                      onChange={(e) => setForm({ ...form, team_id: e.target.value })}
-                      placeholder="Team ID"
-                      required
-                    />
-                  )}
+                  <span className="modal-readonly">{getTeamName(form.team_id)}</span>
                 </div>
                 <div className="modal-row">
                   <label>Possession %</label>
@@ -515,10 +563,113 @@ function TeamMatchStats() {
                   Cancel
                 </button>
                 <button type="submit" className="modal-submit">
-                  {editing ? 'Update' : 'Create'}
+                  Update
                 </button>
               </div>
             </form>
+              </>
+            ) : (
+              <>
+                <h2>Add Team Match Stat (Both Teams)</h2>
+                <form onSubmit={handleSubmitBothTeams}>
+                  <div className="modal-grid">
+                    <div className="modal-row modal-row-full">
+                      <label>Match *</label>
+                      {matches.length > 0 ? (
+                        <select
+                          value={bothTeamsForm.match_id}
+                          onChange={(e) => setBothTeamsForm({ ...bothTeamsForm, match_id: e.target.value })}
+                          required
+                        >
+                          <option value="">Select match</option>
+                          {matches.map((m) => {
+                            const homeName = teams.find((t) => t.team_id === m.home_team_id)?.name || `Team #${m.home_team_id}`;
+                            const awayName = teams.find((t) => t.team_id === m.away_team_id)?.name || `Team #${m.away_team_id}`;
+                            return (
+                              <option key={m.match_id} value={m.match_id}>
+                                {homeName} vs {awayName}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      ) : (
+                        <input type="number" min="1" value={bothTeamsForm.match_id} onChange={(e) => setBothTeamsForm({ ...bothTeamsForm, match_id: e.target.value })} placeholder="Match ID" required />
+                      )}
+                    </div>
+                    <div className="modal-row">
+                      <label>Home Team Stat ID *</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={bothTeamsForm.home_stat_id}
+                        onChange={(e) => setBothTeamsForm({ ...bothTeamsForm, home_stat_id: e.target.value })}
+                        placeholder="e.g. 1"
+                        required
+                      />
+                    </div>
+                    <div className="modal-row">
+                      <label>Away Team Stat ID *</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={bothTeamsForm.away_stat_id}
+                        onChange={(e) => setBothTeamsForm({ ...bothTeamsForm, away_stat_id: e.target.value })}
+                        placeholder="e.g. 2"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {getSelectedMatch() && (
+                    <>
+                      <div className="team-match-stats-section">
+                        <h3 className="team-stats-section-title">{getTeamName(getSelectedMatch().home_team_id)} (Home)</h3>
+                        <div className="modal-grid">
+                          {['possession_percentage', 'shots', 'shots_on_target', 'shots_off_target', 'blocked_shots', 'corners', 'offsides', 'fouls', 'yellow_cards', 'red_cards', 'passes', 'passes_completed', 'pass_accuracy', 'tackles', 'saves'].map((field) => (
+                            <div key={`home-${field}`} className="modal-row">
+                              <label>{field.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</label>
+                              <input
+                                type="number"
+                                step={field.includes('percentage') || field.includes('accuracy') ? '0.1' : undefined}
+                                min="0"
+                                max={field.includes('percentage') || field.includes('accuracy') ? 100 : undefined}
+                                value={bothTeamsForm.home[field] ?? ''}
+                                onChange={(e) => updateBothTeamsField('home', field, e.target.value)}
+                                placeholder={field.includes('percentage') || field.includes('accuracy') ? '0.0-100.0' : '0'}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="team-match-stats-section">
+                        <h3 className="team-stats-section-title">{getTeamName(getSelectedMatch().away_team_id)} (Away)</h3>
+                        <div className="modal-grid">
+                          {['possession_percentage', 'shots', 'shots_on_target', 'shots_off_target', 'blocked_shots', 'corners', 'offsides', 'fouls', 'yellow_cards', 'red_cards', 'passes', 'passes_completed', 'pass_accuracy', 'tackles', 'saves'].map((field) => (
+                            <div key={`away-${field}`} className="modal-row">
+                              <label>{field.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</label>
+                              <input
+                                type="number"
+                                step={field.includes('percentage') || field.includes('accuracy') ? '0.1' : undefined}
+                                min="0"
+                                max={field.includes('percentage') || field.includes('accuracy') ? 100 : undefined}
+                                value={bothTeamsForm.away[field] ?? ''}
+                                onChange={(e) => updateBothTeamsField('away', field, e.target.value)}
+                                placeholder={field.includes('percentage') || field.includes('accuracy') ? '0.0-100.0' : '0'}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="modal-actions">
+                    <button type="button" className="modal-cancel" onClick={closeModal}>Cancel</button>
+                    <button type="submit" className="modal-submit" disabled={!getSelectedMatch()}>Create Both</button>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
