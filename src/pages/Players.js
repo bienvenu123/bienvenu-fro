@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { getPlayers, createPlayer, updatePlayer, deletePlayer } from '../services/playerService';
 import { getCountries } from '../services/countryService';
+import { getTeams } from '../services/teamService';
 import './Players.css';
 
 function Players() {
   const [players, setPlayers] = useState([]);
   const [countries, setCountries] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
@@ -19,6 +21,7 @@ function Players() {
     date_of_birth: '',
     nationality_id: '',
     second_nationality_id: '',
+    team_id: '',
     height_cm: '',
     weight_kg: '',
     preferred_foot: '',
@@ -31,12 +34,14 @@ function Players() {
     try {
       setLoading(true);
       setError(null);
-      const [playersData, countriesData] = await Promise.all([
+      const [playersData, countriesData, teamsData] = await Promise.all([
         getPlayers(),
         getCountries(),
+        getTeams().catch(() => []),
       ]);
       setPlayers(playersData);
       setCountries(countriesData);
+      setTeams(teamsData);
     } catch (err) {
       setError(err.message || 'Failed to load data');
     } finally {
@@ -74,6 +79,14 @@ function Players() {
     return c ? c.name : `Country #${countryId}`;
   };
 
+  const getTeamName = (teamId) => {
+    if (teamId === null || teamId === undefined || teamId === '') return '—';
+    const id = typeof teamId === 'string' ? parseInt(teamId, 10) : teamId;
+    if (Number.isNaN(id)) return '—';
+    const t = teams.find((x) => x.team_id === id || x.team_id === teamId);
+    return t ? t.name : `Team #${teamId}`;
+  };
+
   const getFullName = (player) => {
     return `${player.first_name || ''} ${player.last_name || ''}`.trim() || `Player #${player.player_id}`;
   };
@@ -87,6 +100,7 @@ function Players() {
       date_of_birth: '',
       nationality_id: countries[0]?.country_id ?? '',
       second_nationality_id: '',
+      team_id: teams[0]?.team_id ?? '',
       height_cm: '',
       weight_kg: '',
       preferred_foot: '',
@@ -104,8 +118,9 @@ function Players() {
       first_name: player.first_name || '',
       last_name: player.last_name || '',
       date_of_birth: formatDateForInput(player.date_of_birth),
-      nationality_id: player.nationality_id ?? '',
-      second_nationality_id: player.second_nationality_id ?? '',
+      nationality_id: player.nationality_id != null ? String(player.nationality_id) : '',
+      second_nationality_id: player.second_nationality_id != null ? String(player.second_nationality_id) : '',
+      team_id: player.team_id != null ? String(player.team_id) : '',
       height_cm: player.height_cm ?? '',
       weight_kg: player.weight_kg ?? '',
       preferred_foot: player.preferred_foot || '',
@@ -131,6 +146,7 @@ function Players() {
         date_of_birth: form.date_of_birth || null,
         nationality_id: parseInt(form.nationality_id, 10) || null,
         second_nationality_id: form.second_nationality_id ? parseInt(form.second_nationality_id, 10) : null,
+        team_id: form.team_id ? parseInt(form.team_id, 10) : null,
         height_cm: form.height_cm ? parseInt(form.height_cm, 10) : null,
         weight_kg: form.weight_kg ? parseFloat(form.weight_kg) : null,
         preferred_foot: form.preferred_foot || null,
@@ -172,7 +188,8 @@ function Players() {
     (p) =>
       p.first_name?.toLowerCase().includes(search.toLowerCase()) ||
       p.last_name?.toLowerCase().includes(search.toLowerCase()) ||
-      getCountryName(p.nationality_id)?.toLowerCase().includes(search.toLowerCase())
+      getCountryName(p.nationality_id)?.toLowerCase().includes(search.toLowerCase()) ||
+      getTeamName(p.team_id)?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -212,6 +229,7 @@ function Players() {
                 <th>Last Name</th>
                 <th>Date of Birth</th>
                 <th>Nationality</th>
+                <th>Team</th>
                 <th>Height</th>
                 <th>Weight</th>
                 <th>Foot</th>
@@ -222,7 +240,15 @@ function Players() {
             </thead>
             <tbody>
               {filtered.map((player) => (
-                <tr key={player.player_id}>
+                <tr
+                  key={player.player_id}
+                  className="player-row-clickable"
+                  onClick={() => openEdit(player)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEdit(player); } }}
+                  aria-label={`Edit ${player.first_name || ''} ${player.last_name || ''}`.trim() || `Edit player ${player.player_id}`}
+                >
                   <td>{player.player_id}</td>
                   <td>
                     {player.photo_url ? (
@@ -235,6 +261,7 @@ function Players() {
                   <td className="data-cell-name">{player.last_name}</td>
                   <td>{formatDate(player.date_of_birth)}</td>
                   <td>{getCountryName(player.nationality_id)}</td>
+                  <td className="data-cell-name">{getTeamName(player.team_id)}</td>
                   <td>{player.height_cm ? `${player.height_cm} cm` : '—'}</td>
                   <td>{player.weight_kg ? `${player.weight_kg} kg` : '—'}</td>
                   <td>
@@ -250,12 +277,12 @@ function Players() {
                       {player.is_active ? 'Yes' : 'No'}
                     </span>
                   </td>
-                  <td>
+                  <td onClick={(e) => e.stopPropagation()}>
                     <div className="action-btns">
-                      <button className="edit-btn" onClick={() => openEdit(player)}>
+                      <button type="button" className="edit-btn" onClick={() => openEdit(player)}>
                         <Pencil size={14} /> Edit
                       </button>
-                      <button className="delete-btn" onClick={() => handleDelete(player)} aria-label="Delete">
+                      <button type="button" className="delete-btn" onClick={() => handleDelete(player)} aria-label="Delete">
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -344,6 +371,30 @@ function Players() {
                       </option>
                     ))}
                   </select>
+                </div>
+                <div className="modal-row">
+                  <label>Team</label>
+                  {teams.length > 0 ? (
+                    <select
+                      value={form.team_id}
+                      onChange={(e) => setForm({ ...form, team_id: e.target.value })}
+                    >
+                      <option value="">No team</option>
+                      {teams.map((t) => (
+                        <option key={t.team_id} value={String(t.team_id)}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="number"
+                      min="1"
+                      value={form.team_id}
+                      onChange={(e) => setForm({ ...form, team_id: e.target.value })}
+                      placeholder="Team ID (optional)"
+                    />
+                  )}
                 </div>
                 <div className="modal-row">
                   <label>Height (cm)</label>

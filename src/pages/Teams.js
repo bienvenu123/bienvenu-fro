@@ -1,18 +1,24 @@
 import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Search, FileBarChart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Pencil, Trash2, Search, FileBarChart, Users } from 'lucide-react';
 import { getTeams, createTeam, updateTeam, deleteTeam } from '../services/teamService';
 import { getCountries } from '../services/countryService';
+import { getPlayers } from '../services/playerService';
 import ReportModal from '../components/ReportModal/ReportModal';
 import './Teams.css';
 
 function Teams() {
+  const navigate = useNavigate();
   const [teams, setTeams] = useState([]);
   const [countries, setCountries] = useState([]);
+  const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [rosterModalOpen, setRosterModalOpen] = useState(false);
+  const [rosterTeam, setRosterTeam] = useState(null);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
     team_id: '',
@@ -33,9 +39,14 @@ function Teams() {
     try {
       setLoading(true);
       setError(null);
-      const [teamsData, countriesData] = await Promise.all([getTeams(), getCountries()]);
+      const [teamsData, countriesData, playersData] = await Promise.all([
+        getTeams(),
+        getCountries(),
+        getPlayers().catch(() => []),
+      ]);
       setTeams(teamsData);
       setCountries(countriesData);
+      setPlayers(playersData);
     } catch (err) {
       setError(err.message || 'Failed to load data');
     } finally {
@@ -51,6 +62,20 @@ function Teams() {
     const c = countries.find((x) => x.country_id === countryId);
     return c ? c.name : String(countryId);
   };
+
+  const openRoster = (team) => {
+    setRosterTeam(team);
+    setRosterModalOpen(true);
+  };
+
+  const closeRosterModal = () => {
+    setRosterModalOpen(false);
+    setRosterTeam(null);
+  };
+
+  const rosterPlayers = rosterTeam
+    ? players.filter((p) => p.team_id === rosterTeam.team_id)
+    : [];
 
   const openCreate = () => {
     setEditing(null);
@@ -221,6 +246,14 @@ function Teams() {
                   </td>
                   <td>
                     <div className="action-btns">
+                      <button
+                        type="button"
+                        className="roster-btn"
+                        onClick={() => openRoster(team)}
+                        title="View players"
+                      >
+                        <Users size={14} /> Players
+                      </button>
                       <button className="edit-btn" onClick={() => openEdit(team)}>
                         <Pencil size={14} /> Edit
                       </button>
@@ -394,6 +427,69 @@ function Teams() {
         data={teams}
         dateField="created_at"
       />
+
+      {rosterModalOpen && rosterTeam && (
+        <div className="modal-overlay" onClick={closeRosterModal}>
+          <div className="modal modal-wide roster-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Players — {rosterTeam.name}</h2>
+            <p className="roster-subtitle">
+              {rosterPlayers.length} {rosterPlayers.length === 1 ? 'player' : 'players'} in this team
+            </p>
+            <div className="roster-list-wrapper">
+              {rosterPlayers.length === 0 ? (
+                <p className="roster-empty">No players assigned to this team yet.</p>
+              ) : (
+                <table className="data-table roster-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Photo</th>
+                      <th>Name</th>
+                      <th>Date of birth</th>
+                      <th>Shirt #</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rosterPlayers.map((player) => (
+                      <tr key={player.player_id}>
+                        <td>{player.player_id}</td>
+                        <td>
+                          {player.photo_url ? (
+                            <img src={player.photo_url} alt="" className="player-photo roster-photo" />
+                          ) : (
+                            <span className="photo-placeholder">—</span>
+                          )}
+                        </td>
+                        <td className="data-cell-name">
+                          {[player.first_name, player.last_name].filter(Boolean).join(' ') || `Player #${player.player_id}`}
+                        </td>
+                        <td>
+                          {player.date_of_birth
+                            ? new Date(player.date_of_birth).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                            : '—'}
+                        </td>
+                        <td>{player.shirt_number ?? '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-link-players-btn"
+                onClick={() => { closeRosterModal(); navigate('/players'); }}
+              >
+                Manage players
+              </button>
+              <button type="button" className="modal-cancel" onClick={closeRosterModal}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

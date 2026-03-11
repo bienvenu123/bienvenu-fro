@@ -46,7 +46,7 @@ export async function getPlayerById(playerId) {
 
 /**
  * POST /players - Create a new player
- * @param {Object} player - { player_id, first_name, last_name, date_of_birth, nationality_id, second_nationality_id?, height_cm?, weight_kg?, preferred_foot?, photo_url?, shirt_number?, is_active? }
+ * @param {Object} player - { player_id, first_name, last_name, date_of_birth, nationality_id, second_nationality_id?, team_id?, height_cm?, weight_kg?, preferred_foot?, photo_url?, shirt_number?, is_active? }
  * @returns {Promise<Object>} Created player
  */
 export async function createPlayer(player) {
@@ -59,7 +59,7 @@ export async function createPlayer(player) {
 /**
  * PUT /players/:player_id - Update an existing player
  * @param {number} playerId
- * @param {Object} updates - { first_name?, last_name?, date_of_birth?, nationality_id?, second_nationality_id?, height_cm?, weight_kg?, preferred_foot?, photo_url?, shirt_number?, is_active? }
+ * @param {Object} updates - { first_name?, last_name?, date_of_birth?, nationality_id?, second_nationality_id?, team_id?, height_cm?, weight_kg?, preferred_foot?, photo_url?, shirt_number?, is_active? }
  * @returns {Promise<Object>} Updated player
  */
 export async function updatePlayer(playerId, updates) {

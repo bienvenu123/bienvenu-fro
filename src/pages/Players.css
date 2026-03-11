@@ -102,6 +102,14 @@
   background: #fafafa;
 }
 
+.player-row-clickable {
+  cursor: pointer;
+}
+
+.player-row-clickable:hover {
+  background: #f0f4ff !important;
+}
+
 .data-cell-name {
   font-weight: 500;
   color: #1f2937;
