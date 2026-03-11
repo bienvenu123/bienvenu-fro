@@ -354,55 +354,33 @@ function TeamSeasonStats() {
                 </div>
                 <div className="modal-row">
                   <label>Season *</label>
-                  {seasons.length > 0 ? (
-                    <select
-                      value={form.season_id}
-                      onChange={(e) => setForm({ ...form, season_id: e.target.value })}
-                      required
-                    >
-                      <option value="">Select season</option>
-                      {seasons.map((s) => (
-                        <option key={s.season_id} value={s.season_id}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type="number"
-                      min="1"
-                      value={form.season_id}
-                      onChange={(e) => setForm({ ...form, season_id: e.target.value })}
-                      placeholder="Season ID"
-                      required
-                    />
-                  )}
+                  <select
+                    value={form.season_id}
+                    onChange={(e) => setForm({ ...form, season_id: e.target.value })}
+                    required
+                  >
+                    <option value="">{seasons.length > 0 ? 'Select season' : 'No seasons loaded'}</option>
+                    {seasons.map((s) => (
+                      <option key={s.season_id} value={s.season_id}>
+                        {s.name || `Season #${s.season_id}`}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="modal-row">
                   <label>League *</label>
-                  {leagues.length > 0 ? (
-                    <select
-                      value={form.league_id}
-                      onChange={(e) => setForm({ ...form, league_id: e.target.value })}
-                      required
-                    >
-                      <option value="">Select league</option>
-                      {leagues.map((l) => (
-                        <option key={l.league_id} value={l.league_id}>
-                          {l.name}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type="number"
-                      min="1"
-                      value={form.league_id}
-                      onChange={(e) => setForm({ ...form, league_id: e.target.value })}
-                      placeholder="League ID"
-                      required
-                    />
-                  )}
+                  <select
+                    value={form.league_id}
+                    onChange={(e) => setForm({ ...form, league_id: e.target.value })}
+                    required
+                  >
+                    <option value="">{leagues.length > 0 ? 'Select league' : 'No leagues loaded'}</option>
+                    {leagues.map((l) => (
+                      <option key={l.league_id} value={l.league_id}>
+                        {l.name || `League #${l.league_id}`}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="modal-row">
                   <label>Matches Played</label>
