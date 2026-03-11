@@ -1,5 +1,23 @@
 /* Shared responsive styles for data pages */
 
+/* Light field background on all form modals (overrides dark/black inputs) */
+.modal .modal-row input,
+.modal .modal-row select,
+.modal input.report-input,
+.modal select.report-select {
+  background: #f9fafb !important;
+  color: #111827 !important;
+}
+
+.modal .modal-row input::placeholder {
+  color: #6b7280;
+}
+
+.modal .modal-row input:disabled {
+  background: #f3f4f6 !important;
+  color: #6b7280 !important;
+}
+
 /* Ensure all table data is visible */
 .data-table-wrapper {
   overflow-x: auto;
